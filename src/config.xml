@@ -1,5 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="panel" version="1.1.0">
+<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="panel" version="2.0.0">
+    <macversion>2</macversion>
+
     <details>
         <title>Panel</title>
         <email>aarranz@conwet.com</email>
@@ -32,5 +34,9 @@
     </wiring>
 
     <contents src="index.html" useplatformstyle="true"/>
+    <scripts>
+        <script src="js/main.js" />
+    </scripts>
+    <entrypoint name="CoNWet_Panel" />
     <rendering height="200px" width="400px"/>
 </widget>
