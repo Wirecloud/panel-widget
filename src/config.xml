@@ -27,6 +27,8 @@
         <preference name="max-height" type="text" label="Max height (Percentage)" default="60" />
         <preference name="min-height" type="text" label="Min height (Percentage)" default="10" />
         <preference name="decimals" type="text" label="Decimals" description="Number of decimals to use for number values. Empty for using all the available decimals" default="1" />
+        <preference name="background-color" type="text" label="Background color" default="#FFFFFFFF" />
+        <preference name="text-color" type="text" label="Text color" default="#000000FF" />
     </preferences>
 
     <wiring>
@@ -37,6 +39,6 @@
     <scripts>
         <script src="js/main.js" />
     </scripts>
-    <entrypoint name="CoNWet_Panel" />
+    <entrypoint name="CoNWeT_Panel" />
     <rendering height="200px" width="400px"/>
 </widget>

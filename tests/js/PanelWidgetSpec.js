@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global MashupPlatform, MockMP, init, processIncomingData, repaint */
+/* global MashupPlatform, MockMP, shadowDOM, widget */
 
 (function () {
 
@@ -40,7 +40,9 @@
                     'default-unit': '',
                     'max-height': 60,
                     'min-height': 10,
-                    'decimals': 1
+                    'decimals': 1,
+                    'background-color': '#FFFFFFFF',
+                    'text-color': '#000000FF'
                 },
                 inputs: ['textinput']
             });
@@ -54,7 +56,7 @@
             window.shadowDOM = div.shadowRoot;
             shadowDOM.querySelector("body").innerHTML += HTML_FIXTURE_CODE
 
-            window.widget = new window.CoNWet_Panel(MashupPlatform, shadowDOM, undefined);
+            window.widget = new window.CoNWeT_Panel(MashupPlatform, shadowDOM, undefined);
         });
 
         beforeEach(() => {

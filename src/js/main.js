@@ -21,6 +21,8 @@
 
     "use strict";
 
+    const colorRegex = /^#[0-9a-fA-F]{8}$/i;
+
     class Widget {
         constructor(MashupPlatform, shadowDOM, _) {
             this.MashupPlatform = MashupPlatform;
@@ -33,18 +35,40 @@
         }
 
         repaint() {
-            var height, width, message, next, min;
+            var height, width, backgroundColor, textColor, message, next, min;
 
             height = this.MashupPlatform.widget.context.get('heightInPixels');
             width = this.MashupPlatform.widget.context.get('widthInPixels');
+            backgroundColor = this.MashupPlatform.prefs.get('background-color');
+            textColor = this.MashupPlatform.prefs.get('text-color');
             message = this.shadowDOM.getElementById('message');
+
+            if (colorRegex.test(textColor)) {
+                this.body.style.color = "rgba(" + parseInt(textColor.substr(1, 2), 16) + "," +
+                            parseInt(textColor.substr(3, 2), 16) + "," +
+                            parseInt(textColor.substr(5, 2), 16) + "," +
+                            (parseInt(textColor.substr(7, 2), 16) / 255) + ")";
+            } else {
+                this.body.style.color = "#000000";
+                this.MashupPlatform.widget.log("Invalid text color: " + textColor, this.MashupPlatform.log.WARN);
+            }
 
             this.body.style.fontSize = (height * 0.7) + 'px';
             this.body.style.lineHeight = height + 'px';
+            if (colorRegex.test(backgroundColor)) {
+                this.body.style.backgroundColor = "rgba(" + parseInt(backgroundColor.substr(1, 2), 16) + "," +
+                            parseInt(backgroundColor.substr(3, 2), 16) + "," +
+                            parseInt(backgroundColor.substr(5, 2), 16) + "," +
+                            (parseInt(backgroundColor.substr(7, 2), 16) / 255) + ")";
+            } else {
+                this.body.style.backgroundColor = "#FFFFFF";
+                this.MashupPlatform.widget.log("Invalid background color: " + backgroundColor, this.MashupPlatform.log.WARN);
+            }
 
             message.style.height = height + 'px';
-            next = Number(MashupPlatform.prefs.get('max-height')) / 100;
-            min = Number(MashupPlatform.prefs.get('min-height')) / 100;
+
+            next = Number(this.MashupPlatform.prefs.get('max-height')) / 100;
+            min = Number(this.MashupPlatform.prefs.get('min-height')) / 100;
             while ((message.offsetWidth > width || message.offsetHeight > height) && next >= min) {
                 this.body.style.fontSize = Math.floor(height * next) + 'px';
                 next -= 0.05;
@@ -105,7 +129,7 @@
         }
 
         init() {
-            this.MashupPlatform.wiring.registerCallback('textinput', this.processIncomingData);
+            this.MashupPlatform.wiring.registerCallback('textinput', this.processIncomingData.bind(this));
 
             this.MashupPlatform.widget.context.registerCallback(function (newValues) {
                 if ("heightInPixels" in newValues || "widthInPixels" in newValues) {
@@ -113,12 +137,16 @@
                 }
             }.bind(this));
 
+            this.MashupPlatform.prefs.registerCallback(function (_) {
+                this.repaint();
+            }.bind(this));
+
             /* Initial content */
 
             var message = this.shadowDOM.getElementById('message');
             message.textContent = this.MashupPlatform.prefs.get('default-value');
 
-            var default_unit = MashupPlatform.prefs.get('default-unit');
+            var default_unit = this.MashupPlatform.prefs.get('default-unit');
             if (default_unit.trim() != "") {
                 var unit = document.createElement('span');
                 unit.textContent = default_unit;
@@ -127,6 +155,6 @@
         }
     }
 
-    window.CoNWet_Panel = Widget;
+    window.CoNWeT_Panel = Widget;
 
 })();
