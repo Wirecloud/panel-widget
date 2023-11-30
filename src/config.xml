@@ -22,13 +22,14 @@
     </requirements>
 
     <preferences>
+        <preference name="title" type="text" label="Title" default="Panel" />
         <preference name="default-value" type="text" label="Default Value" default="--" />
         <preference name="default-unit" type="text" label="Default Unit" default="" />
         <preference name="max-height" type="text" label="Max height (Percentage)" default="60" />
         <preference name="min-height" type="text" label="Min height (Percentage)" default="10" />
         <preference name="decimals" type="text" label="Decimals" description="Number of decimals to use for number values. Empty for using all the available decimals" default="1" />
         <preference name="background-color" type="text" label="Background color" default="#FFFFFFFF" />
-        <preference name="text-color" type="text" label="Text color" default="#000000FF" />
+        <preference name="text-color" type="text" label="Text color" default="#333333FF" />
     </preferences>
 
     <wiring>

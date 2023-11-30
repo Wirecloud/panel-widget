@@ -20,7 +20,7 @@
 
     "use strict";
 
-    const HTML_FIXTURE_CODE = '<h1 id="message"><span id="unit"></span></h1>';
+    const HTML_FIXTURE_CODE = '<h5 id="title"></h5><h1 id="message"><span id="unit"></span></h1>';
 
     const clearDocument = function clearDocument() {
         var elements = shadowDOM.querySelector("body").children;
@@ -36,6 +36,7 @@
             window.MashupPlatform = new MockMP({
                 type: 'widget',
                 prefs: {
+                    'title': 'Panel Widget',
                     'default-value': '--',
                     'default-unit': '',
                     'max-height': 60,

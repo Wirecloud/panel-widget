@@ -35,13 +35,16 @@
         }
 
         repaint() {
-            var height, width, backgroundColor, textColor, message, next, min;
+            var height, width, backgroundColor, textColor, message, next, min, title;
 
-            height = this.MashupPlatform.widget.context.get('heightInPixels');
-            width = this.MashupPlatform.widget.context.get('widthInPixels');
+            height = this.body.offsetHeight;
+            width = this.body.offsetWidth;
             backgroundColor = this.MashupPlatform.prefs.get('background-color');
             textColor = this.MashupPlatform.prefs.get('text-color');
             message = this.shadowDOM.getElementById('message');
+            title = this.shadowDOM.getElementById('title');
+
+            title.textContent = this.MashupPlatform.prefs.get('title');
 
             if (colorRegex.test(textColor)) {
                 this.body.style.color = "rgba(" + parseInt(textColor.substr(1, 2), 16) + "," +
@@ -53,8 +56,6 @@
                 this.MashupPlatform.widget.log("Invalid text color: " + textColor, this.MashupPlatform.log.WARN);
             }
 
-            this.body.style.fontSize = (height * 0.7) + 'px';
-            this.body.style.lineHeight = height + 'px';
             if (colorRegex.test(backgroundColor)) {
                 this.body.style.backgroundColor = "rgba(" + parseInt(backgroundColor.substr(1, 2), 16) + "," +
                             parseInt(backgroundColor.substr(3, 2), 16) + "," +
@@ -65,16 +66,19 @@
                 this.MashupPlatform.widget.log("Invalid background color: " + backgroundColor, this.MashupPlatform.log.WARN);
             }
 
-            message.style.height = height + 'px';
+            height -= title.offsetHeight;
+
+            message.style.fontSize = (height * 0.7) + 'px';
+            this.body.style.lineHeight = height + 'px';
 
             next = Number(this.MashupPlatform.prefs.get('max-height')) / 100;
             min = Number(this.MashupPlatform.prefs.get('min-height')) / 100;
             while ((message.offsetWidth > width || message.offsetHeight > height) && next >= min) {
-                this.body.style.fontSize = Math.floor(height * next) + 'px';
+                message.style.fontSize = Math.floor(height * next) + 'px';
                 next -= 0.05;
             }
             if ((message.offsetWidth > width || message.offsetHeight > height)) {
-                this.body.style.fontSize = Math.floor(height * min) + 'px';
+                message.style.fontSize = Math.floor(height * min) + 'px';
             }
         }
 
@@ -137,6 +141,10 @@
                 }
             }.bind(this));
 
+            // Sometimes the widget is not correctly resized when the page is loaded
+            // so we force a repaint after a timeout
+            setTimeout(this.repaint.bind(this), 500);
+
             this.MashupPlatform.prefs.registerCallback(function (_) {
                 this.repaint();
             }.bind(this));
@@ -144,7 +152,9 @@
             /* Initial content */
 
             var message = this.shadowDOM.getElementById('message');
+            var title = this.shadowDOM.getElementById('title');
             message.textContent = this.MashupPlatform.prefs.get('default-value');
+            title.textContent = this.MashupPlatform.prefs.get('title');
 
             var default_unit = this.MashupPlatform.prefs.get('default-unit');
             if (default_unit.trim() != "") {
