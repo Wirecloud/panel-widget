@@ -21,8 +21,6 @@
 
     "use strict";
 
-    const colorRegex = /^#[0-9a-fA-F]{8}$/i;
-
     class Widget {
         constructor(MashupPlatform, shadowDOM, _) {
             this.MashupPlatform = MashupPlatform;
@@ -46,25 +44,8 @@
 
             title.textContent = this.MashupPlatform.prefs.get('title');
 
-            if (colorRegex.test(textColor)) {
-                this.body.style.color = "rgba(" + parseInt(textColor.substr(1, 2), 16) + "," +
-                            parseInt(textColor.substr(3, 2), 16) + "," +
-                            parseInt(textColor.substr(5, 2), 16) + "," +
-                            (parseInt(textColor.substr(7, 2), 16) / 255) + ")";
-            } else {
-                this.body.style.color = "#000000";
-                this.MashupPlatform.widget.log("Invalid text color: " + textColor, this.MashupPlatform.log.WARN);
-            }
-
-            if (colorRegex.test(backgroundColor)) {
-                this.body.style.backgroundColor = "rgba(" + parseInt(backgroundColor.substr(1, 2), 16) + "," +
-                            parseInt(backgroundColor.substr(3, 2), 16) + "," +
-                            parseInt(backgroundColor.substr(5, 2), 16) + "," +
-                            (parseInt(backgroundColor.substr(7, 2), 16) / 255) + ")";
-            } else {
-                this.body.style.backgroundColor = "#FFFFFF";
-                this.MashupPlatform.widget.log("Invalid background color: " + backgroundColor, this.MashupPlatform.log.WARN);
-            }
+            this.body.style.color = this.parseColor(textColor, "#000000");
+            this.body.style.backgroundColor = this.parseColor(backgroundColor, "#FFFFFF");
 
             height -= title.offsetHeight;
 
@@ -130,6 +111,20 @@
             }
 
             this.repaint();
+        }
+
+        parseColor(color, default_color) {
+            const colorRegex = /^#[0-9a-fA-F]{8}$/i;
+
+            if (colorRegex.test(color)) {
+                return "rgba(" + parseInt(color.substr(1, 2), 16) + "," +
+                            parseInt(color.substr(3, 2), 16) + "," +
+                            parseInt(color.substr(5, 2), 16) + "," +
+                            (parseInt(color.substr(7, 2), 16) / 255) + ")";
+            } else {
+                this.MashupPlatform.widget.log("Invalid color: " + color, this.MashupPlatform.log.WARN);
+                return default_color;
+            }
         }
 
         init() {
