@@ -33,19 +33,47 @@
         }
 
         repaint() {
-            var height, width, backgroundColor, textColor, message, next, min, title;
+            var height, width, backgroundColor, textColor, barColor, message, next, min, title, minmaxContainer,
+                leftTagText, rightTagText, leftTag, rightTag, minVal, maxVal, barIndicator, bar;
 
             height = this.body.offsetHeight;
             width = this.body.offsetWidth;
             backgroundColor = this.MashupPlatform.prefs.get('background-color');
             textColor = this.MashupPlatform.prefs.get('text-color');
+            barColor = this.MashupPlatform.prefs.get('bar-color');
+            leftTagText = this.MashupPlatform.prefs.get('left-tag-text');
+            rightTagText = this.MashupPlatform.prefs.get('right-tag-text');
+            minVal = this.MashupPlatform.prefs.get('min-value');
+            maxVal = this.MashupPlatform.prefs.get('max-value');
             message = this.shadowDOM.getElementById('message');
             title = this.shadowDOM.getElementById('title');
+            minmaxContainer = this.shadowDOM.getElementById('minmax-container');
+            leftTag = this.shadowDOM.getElementById('bar-tag-left');
+            rightTag = this.shadowDOM.getElementById('bar-tag-right');
+            barIndicator = this.shadowDOM.getElementById('bar-indicator');
+            bar = this.shadowDOM.getElementById('bar');
+
+            // Try to parse min and max values to check if they are numbers
+            if (minVal.trim() != "" && maxVal.trim() != "" && !isNaN(minVal) && !isNaN(maxVal)
+                    && parseFloat(minVal) < parseFloat(maxVal)) {
+                minmaxContainer.style.display = "";
+                leftTag.textContent = leftTagText;
+                rightTag.textContent = rightTagText;
+
+                height -= minmaxContainer.offsetHeight + parseInt(window.getComputedStyle(minmaxContainer)["margin-bottom"], 10) +
+                    parseInt(window.getComputedStyle(minmaxContainer)["margin-top"], 10);
+            } else {
+                minmaxContainer.style.display = "none";
+            }
 
             title.textContent = this.MashupPlatform.prefs.get('title');
 
             this.body.style.color = this.parseColor(textColor, "#000000");
             this.body.style.backgroundColor = this.parseColor(backgroundColor, "#FFFFFF");
+            leftTag.style.color = this.parseColor(textColor, "#000000");
+            rightTag.style.color = this.parseColor(textColor, "#000000");
+            barIndicator.style.backgroundColor = this.parseColor(textColor, "#000000");
+            bar.style.backgroundColor = this.parseColor(barColor, "#000000");
 
             height -= title.offsetHeight;
 
@@ -76,7 +104,11 @@
         }
 
         processIncomingData(data) {
-            var message, unit, decimals, default_unit, pow;
+            var message, unit, decimals, default_unit, pow, minVal, maxVal, barIndicator, percentage;
+
+            minVal = this.MashupPlatform.prefs.get('min-value');
+            maxVal = this.MashupPlatform.prefs.get('max-value');
+            barIndicator = this.shadowDOM.getElementById('bar-indicator');
 
             data = this.parseInputEndpointData(data);
             if (data == null || ["number", "string", "boolean"].indexOf(typeof data) !== -1) {
@@ -93,6 +125,19 @@
             if (data.value == null) {
                 message.textContent = this.MashupPlatform.prefs.get('default-value');
             } else if (typeof data.value === 'number') {
+                if (minVal.trim() != "" && maxVal.trim() != "" && !isNaN(minVal) && !isNaN(maxVal)
+                && parseFloat(minVal) < parseFloat(maxVal)) {
+                    percentage = (data.value - minVal) / (maxVal - minVal);
+                    if (percentage < 0) {
+                        percentage = 0;
+                    } else if (percentage > 1) {
+                        percentage = 1;
+                    }
+
+                    barIndicator.style.left = "calc(" + percentage * 100 + "% - (" + percentage + "*" +
+                        barIndicator.offsetWidth + "px))";
+                }
+
                 pow = Math.pow(10, decimals);
                 data.value = Math.round((pow * data.value).toFixed(decimals)) / pow;
                 message.textContent = data.value;

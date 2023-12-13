@@ -20,7 +20,7 @@
 
     "use strict";
 
-    const HTML_FIXTURE_CODE = '<h5 id="title"></h5><h1 id="message"><span id="unit"></span></h1>';
+    const HTML_FIXTURE_CODE = '<h4 id=title></h4><h1 id=message><span id=unit></span></h1><div class=minmax-container id=minmax-container style=display:none><div class="bar-tag bar-tag-left"id=bar-tag-left></div><div class=minmax-bar-container><div class=minmax-bar id=bar><div class=minmax-indicator id=bar-indicator></div></div></div><div class="bar-tag bar-tag-right"id=bar-tag-right></div></div>';
 
     const clearDocument = function clearDocument() {
         var elements = shadowDOM.querySelector("body").children;
@@ -43,7 +43,12 @@
                     'min-height': 10,
                     'decimals': 1,
                     'background-color': '#FFFFFFFF',
-                    'text-color': '#000000FF'
+                    'text-color': '#000000FF',
+                    'bar-color': '#DDDDDDFF',
+                    'min-value': '',
+                    'max-value': '',
+                    'left-tag-text': '',
+                    'right-tag-text': ''
                 },
                 inputs: ['textinput']
             });

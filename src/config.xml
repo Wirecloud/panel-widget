@@ -30,6 +30,11 @@
         <preference name="decimals" type="text" label="Decimals" description="Number of decimals to use for number values. Empty for using all the available decimals" default="1" />
         <preference name="background-color" type="text" label="Background color" default="#FFFFFFFF" />
         <preference name="text-color" type="text" label="Text color" default="#333333FF" />
+        <preference name="bar-color" type="text" label="Bar color" default="#DDDDDDFF" />
+        <preference name="min-value" type="text" label="Minimum possible value" default="" />
+        <preference name="max-value" type="text" label="Maximum possible value" default="" />
+        <preference name="left-tag-text" type="text" label="Left tag text" default="" />
+        <preference name="right-tag-text" type="text" label="Right tag text" default="" />
     </preferences>
 
     <wiring>
