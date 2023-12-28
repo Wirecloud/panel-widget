@@ -1,3 +1,7 @@
+## 2.0.0
+
+- Updates the widget to `macversion` 2.
+
 ## 1.1.0
 
 - Add a preference for controlling how many decimals to use when displaying
