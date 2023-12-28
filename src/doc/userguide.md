@@ -5,9 +5,17 @@ The panel widget is a WireCloud widget that provides an easy way to display simp
 
 ## Settings
 
+- `Title`: Title to show in the panel (empty for not showing any title).
 - `Min height (Percentage)`: Minimal font-size to use. This value is a percentage relative to the available height.
 - `Max height (Percentage)`: Maximal font-size to use. This value is a percentage relative to the available height.
 - `Decimals`: Number of decimals to use for number values. Empty for using all the available decimals.
+- `Background color`: Background color to use for the panel.
+- `Text color`: Text color to use for the panel.
+- `Bar color`: Color to use for the bar that shows the current value in relation to a minimum and maximum value.
+- `Min value`: Minimum value to use for the bar.
+- `Max value`: Maximum value to use for the bar.
+- `Left tag text`: Text to show on the left side of the bar.
+- `Right tag text`: Text to show on the right side of the bar.
 
 ## Wiring
 

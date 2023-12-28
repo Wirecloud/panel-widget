@@ -1,3 +1,11 @@
+## 2.0.0
+
+- Updates the widget to `macversion` 2.
+- Adds the ability to customize colors.
+- Adds the ability to add a title to the panel.
+- Adds the ability to add a bar that shows the current value in relation to a
+  minimum and maximum value.
+
 ## 1.1.0
 
 - Add a preference for controlling how many decimals to use when displaying

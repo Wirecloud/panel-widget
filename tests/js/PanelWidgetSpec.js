@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-/* global MashupPlatform, MockMP, init, processIncomingData, repaint */
+/* global MashupPlatform, MockMP, shadowDOM, widget */
 
 (function () {
 
     "use strict";
 
-    const HTML_FIXTURE_CODE = '<h1 id="message"><span id="unit"></span></h1>';
+    const HTML_FIXTURE_CODE = '<h4 id=title></h4><h1 id=message><span id=unit></span></h1><div class=minmax-container id=minmax-container style=display:none><div class="bar-tag bar-tag-left"id=bar-tag-left></div><div class=minmax-bar-container><div class=minmax-bar id=bar><div class=minmax-indicator id=bar-indicator></div></div></div><div class="bar-tag bar-tag-right"id=bar-tag-right></div></div>';
 
     const clearDocument = function clearDocument() {
-        var elements = document.querySelectorAll('body > *:not(.jasmine_html-reporter)');
+        var elements = shadowDOM.querySelector("body").children;
 
         for (var i = 0; i < elements.length; i++) {
             elements[i].parentElement.removeChild(elements[i]);
@@ -36,19 +36,38 @@
             window.MashupPlatform = new MockMP({
                 type: 'widget',
                 prefs: {
+                    'title': 'Panel Widget',
                     'default-value': '--',
                     'default-unit': '',
                     'max-height': 60,
                     'min-height': 10,
-                    'decimals': 1
+                    'decimals': 1,
+                    'background-color': '#FFFFFFFF',
+                    'text-color': '#000000FF',
+                    'bar-color': '#DDDDDDFF',
+                    'min-value': '',
+                    'max-value': '',
+                    'left-tag-text': '',
+                    'right-tag-text': ''
                 },
                 inputs: ['textinput']
             });
+
+            let div = document.createElement('div');
+            div.id = 'widget';
+            document.body.appendChild(div);
+            div.attachShadow({mode: 'open'});
+            let shadowBody = document.createElement('body');
+            div.shadowRoot.appendChild(shadowBody);
+            window.shadowDOM = div.shadowRoot;
+            shadowDOM.querySelector("body").innerHTML += HTML_FIXTURE_CODE
+
+            window.widget = new window.CoNWeT_Panel(MashupPlatform, shadowDOM, undefined);
         });
 
         beforeEach(() => {
             clearDocument();
-            document.body.innerHTML += HTML_FIXTURE_CODE;
+            shadowDOM.querySelector("body").innerHTML += HTML_FIXTURE_CODE;
             MashupPlatform.reset();
         });
 
@@ -57,20 +76,20 @@
             describe("default-value", () => {
 
                 it("should work with the default value", () => {
-                    spyOn(window, "repaint");
-                    init();
+                    spyOn(widget, "repaint");
+                    widget.init();
 
-                    expect(repaint).not.toHaveBeenCalled();
-                    expect(document.getElementById('message').textContent).toBe("--");
+                    expect(widget.repaint).not.toHaveBeenCalled();
+                    expect(shadowDOM.getElementById('message').textContent).toBe("--");
                 });
 
                 it("should work with other values", () => {
                     MashupPlatform.prefs.set("default-value", "n/a");
-                    spyOn(window, "repaint");
-                    init();
+                    spyOn(widget, "repaint");
+                    widget.init();
 
-                    expect(repaint).not.toHaveBeenCalled();
-                    expect(document.getElementById('message').textContent).toBe("n/a");
+                    expect(widget.repaint).not.toHaveBeenCalled();
+                    expect(shadowDOM.getElementById('message').textContent).toBe("n/a");
                 });
 
             });
@@ -78,20 +97,20 @@
             describe("default-unit", () => {
 
                 it("should work with the default value", () => {
-                    spyOn(window, "repaint");
-                    init();
+                    spyOn(widget, "repaint");
+                    widget.init();
 
-                    expect(repaint).not.toHaveBeenCalled();
-                    expect(document.getElementById('message').textContent).toBe("--");
+                    expect(widget.repaint).not.toHaveBeenCalled();
+                    expect(shadowDOM.getElementById('message').textContent).toBe("--");
                 });
 
                 it("should work with other values", () => {
                     MashupPlatform.prefs.set("default-unit", "ºC");
-                    spyOn(window, "repaint");
-                    init();
+                    spyOn(widget, "repaint");
+                    widget.init();
 
-                    expect(repaint).not.toHaveBeenCalled();
-                    expect(document.getElementById('message').textContent).toBe("--ºC");
+                    expect(widget.repaint).not.toHaveBeenCalled();
+                    expect(shadowDOM.getElementById('message').textContent).toBe("--ºC");
                 });
 
             });
@@ -99,32 +118,32 @@
             describe("decimals", () => {
 
                 it("should work with the default value", () => {
-                    spyOn(window, "repaint");
-                    init();
+                    spyOn(widget, "repaint");
+                    widget.init();
 
-                    processIncomingData(5.12);
+                    widget.processIncomingData(5.12);
 
-                    expect(document.getElementById('message').textContent).toBe("5.1");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("5.1");
                 });
 
                 it("should work with other values", () => {
                     MashupPlatform.prefs.set("decimals", "2");
-                    spyOn(window, "repaint");
-                    init();
+                    spyOn(widget, "repaint");
+                    widget.init();
 
-                    processIncomingData(5.12);
+                    widget.processIncomingData(5.12);
 
-                    expect(document.getElementById('message').textContent).toBe("5.12");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("5.12");
                 });
 
                 it("should handle invalid decimal values", () => {
                     MashupPlatform.prefs.set("decimals", "-1");
-                    spyOn(window, "repaint");
-                    init();
+                    spyOn(widget, "repaint");
+                    widget.init();
 
-                    processIncomingData(5.12);
+                    widget.processIncomingData(5.12);
 
-                    expect(document.getElementById('message').textContent).toBe("5");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("5");
                 });
 
             });
@@ -136,31 +155,31 @@
             describe("basic values (plain)", () => {
 
                 it("number", () => {
-                    init();
-                    processIncomingData(5);
+                    widget.init();
+                    widget.processIncomingData(5);
 
-                    expect(document.getElementById('message').textContent).toBe("5");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("5");
                 });
 
                 it("string", () => {
-                    init();
-                    processIncomingData("new content");
+                    widget.init();
+                    widget.processIncomingData("new content");
 
-                    expect(document.getElementById('message').textContent).toBe("new content");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("new content");
                 });
 
                 it("boolean", () => {
-                    init();
-                    processIncomingData(true);
+                    widget.init();
+                    widget.processIncomingData(true);
 
-                    expect(document.getElementById('message').textContent).toBe("true");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("true");
                 });
 
                 it("null", () => {
-                    init();
-                    processIncomingData(null);
+                    widget.init();
+                    widget.processIncomingData(null);
 
-                    expect(document.getElementById('message').textContent).toBe("--");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("--");
                 });
 
             });
@@ -168,32 +187,32 @@
             describe("basic values", () => {
 
                 it("number", () => {
-                    init();
-                    processIncomingData({value: 5});
+                    widget.init();
+                    widget.processIncomingData({value: 5});
 
-                    expect(document.getElementById('message').textContent).toBe("5");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("5");
                 });
 
                 it("string", () => {
-                    init();
-                    processIncomingData({value: "new content"});
+                    widget.init();
+                    widget.processIncomingData({value: "new content"});
 
-                    expect(document.getElementById('message').textContent).toBe("new content");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("new content");
                 });
 
                 it("boolean", () => {
-                    init();
-                    processIncomingData({value: true});
+                    widget.init();
+                    widget.processIncomingData({value: true});
 
-                    expect(document.getElementById('message').textContent).toBe("true");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("true");
                 });
 
                 it("null", () => {
                     MashupPlatform.prefs.set("default-unit", "ºC");
-                    init();
-                    processIncomingData({value: null});
+                    widget.init();
+                    widget.processIncomingData({value: null});
 
-                    expect(document.getElementById('message').textContent).toBe("--ºC");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("--ºC");
                 });
 
             });
@@ -201,33 +220,33 @@
             describe("unit override", () => {
 
                 it("number", () => {
-                    init();
-                    processIncomingData({value: 5, unit: "km/h"});
+                    widget.init();
+                    widget.processIncomingData({value: 5, unit: "km/h"});
 
-                    expect(document.getElementById('message').textContent).toBe("5km/h");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("5km/h");
                 });
 
                 it("string", () => {
                     MashupPlatform.prefs.set("default-unit", "ºC");
-                    init();
-                    processIncomingData({value: "new content", unit: ""});
+                    widget.init();
+                    widget.processIncomingData({value: "new content", unit: ""});
 
-                    expect(document.getElementById('message').textContent).toBe("new content");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("new content");
                 });
 
                 it("boolean", () => {
                     MashupPlatform.prefs.set("default-unit", "ºC");
-                    init();
-                    processIncomingData({value: true, unit: null});
+                    widget.init();
+                    widget.processIncomingData({value: true, unit: null});
 
-                    expect(document.getElementById('message').textContent).toBe("true");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("true");
                 });
 
                 it("null", () => {
-                    init();
-                    processIncomingData({value: null, unit: "km/h"});
+                    widget.init();
+                    widget.processIncomingData({value: null, unit: "km/h"});
 
-                    expect(document.getElementById('message').textContent).toBe("--km/h");
+                    expect(shadowDOM.getElementById('message').textContent).toBe("--km/h");
                 });
 
             });

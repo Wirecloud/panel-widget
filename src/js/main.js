@@ -21,111 +21,190 @@
 
     "use strict";
 
-    const repaint = function repaint() {
-        var height, width, message, next, min;
+    class Widget {
+        constructor(MashupPlatform, shadowDOM, _) {
+            this.MashupPlatform = MashupPlatform;
+            this.shadowDOM = shadowDOM;
 
-        height = MashupPlatform.widget.context.get('heightInPixels');
-        width = MashupPlatform.widget.context.get('widthInPixels');
-        message = document.getElementById('message');
+            this.body = this.shadowDOM.querySelector('body');
 
-        document.body.style.fontSize = (height * 0.7) + 'px';
-        document.body.style.lineHeight = height + 'px';
-
-        message.style.height = height + 'px';
-        next = Number(MashupPlatform.prefs.get('max-height')) / 100;
-        min = Number(MashupPlatform.prefs.get('min-height')) / 100;
-        while ((message.offsetWidth > width || message.offsetHeight > height) && next >= min) {
-            document.body.style.fontSize = Math.floor(height * next) + 'px';
-            next -= 0.05;
+            this.init();
+            this.repaint();
         }
-        if ((message.offsetWidth > width || message.offsetHeight > height)) {
-            document.body.style.fontSize = Math.floor(height * min) + 'px';
-        }
-    };
 
-    const parseInputEndpointData = function parseInputEndpointData(data) {
-        if (typeof data === "string") {
-            try {
-                data = JSON.parse(data);
-            } catch (e) {
-                return data;
+        repaint() {
+            var height, width, backgroundColor, textColor, barColor, message, next, min, title, minmaxContainer,
+                leftTagText, rightTagText, leftTag, rightTag, minVal, maxVal, barIndicator, bar;
+
+            height = this.body.offsetHeight;
+            width = this.body.offsetWidth;
+            backgroundColor = this.MashupPlatform.prefs.get('background-color');
+            textColor = this.MashupPlatform.prefs.get('text-color');
+            barColor = this.MashupPlatform.prefs.get('bar-color');
+            leftTagText = this.MashupPlatform.prefs.get('left-tag-text');
+            rightTagText = this.MashupPlatform.prefs.get('right-tag-text');
+            minVal = this.MashupPlatform.prefs.get('min-value');
+            maxVal = this.MashupPlatform.prefs.get('max-value');
+            message = this.shadowDOM.getElementById('message');
+            title = this.shadowDOM.getElementById('title');
+            minmaxContainer = this.shadowDOM.getElementById('minmax-container');
+            leftTag = this.shadowDOM.getElementById('bar-tag-left');
+            rightTag = this.shadowDOM.getElementById('bar-tag-right');
+            barIndicator = this.shadowDOM.getElementById('bar-indicator');
+            bar = this.shadowDOM.getElementById('bar');
+
+            // Try to parse min and max values to check if they are numbers
+            if (minVal.trim() != "" && maxVal.trim() != "" && !isNaN(minVal) && !isNaN(maxVal)
+                    && parseFloat(minVal) < parseFloat(maxVal)) {
+                minmaxContainer.style.display = "";
+                leftTag.textContent = leftTagText;
+                rightTag.textContent = rightTagText;
+
+                height -= minmaxContainer.offsetHeight + parseInt(window.getComputedStyle(minmaxContainer)["margin-bottom"], 10) +
+                    parseInt(window.getComputedStyle(minmaxContainer)["margin-top"], 10);
+            } else {
+                minmaxContainer.style.display = "none";
+            }
+
+            title.textContent = this.MashupPlatform.prefs.get('title');
+
+            this.body.style.color = this.parseColor(textColor, "#000000");
+            this.body.style.backgroundColor = this.parseColor(backgroundColor, "#FFFFFF");
+            leftTag.style.color = this.parseColor(textColor, "#000000");
+            rightTag.style.color = this.parseColor(textColor, "#000000");
+            barIndicator.style.backgroundColor = this.parseColor(textColor, "#000000");
+            bar.style.backgroundColor = this.parseColor(barColor, "#000000");
+
+            height -= title.offsetHeight;
+
+            message.style.fontSize = (height * 0.7) + 'px';
+            this.body.style.lineHeight = height + 'px';
+
+            next = Number(this.MashupPlatform.prefs.get('max-height')) / 100;
+            min = Number(this.MashupPlatform.prefs.get('min-height')) / 100;
+            while ((message.offsetWidth > width || message.offsetHeight > height) && next >= min) {
+                message.style.fontSize = Math.floor(height * next) + 'px';
+                next -= 0.05;
+            }
+            if ((message.offsetWidth > width || message.offsetHeight > height)) {
+                message.style.fontSize = Math.floor(height * min) + 'px';
             }
         }
 
-        return data;
-    };
-
-    const processIncomingData = function processIncomingData(data) {
-        var message, unit, decimals, default_unit, pow;
-
-        data = parseInputEndpointData(data);
-        if (data == null || ["number", "string", "boolean"].indexOf(typeof data) !== -1) {
-            data = {
-                value: data
-            };
-        }
-        decimals = parseInt(MashupPlatform.prefs.get('decimals'), 10);
-        if (isNaN(decimals) || decimals < 0) {
-            decimals = 0;
-        }
-
-        message = document.getElementById('message');
-        if (data.value == null) {
-            message.textContent = MashupPlatform.prefs.get('default-value');
-        } else if (typeof data.value === 'number') {
-            pow = Math.pow(10, decimals);
-            data.value = Math.round((pow * data.value).toFixed(decimals)) / pow;
-            message.textContent = data.value;
-        } else {
-            message.textContent = data.value;
-        }
-
-        unit = document.createElement('span');
-        default_unit = MashupPlatform.prefs.get('default-unit');
-        if (data.unit != null) {
-            unit.textContent = data.unit;
-            message.appendChild(unit);
-        } else if (!("unit" in data) && default_unit.trim() != "") {
-            unit.textContent = default_unit;
-            message.appendChild(unit);
-        }
-        repaint();
-    };
-
-    const init = function init() {
-        MashupPlatform.wiring.registerCallback('textinput', processIncomingData);
-
-        MashupPlatform.widget.context.registerCallback(function (newValues) {
-            if ("heightInPixels" in newValues || "widthInPixels" in newValues) {
-                repaint();
+        parseInputEndpointData(data) {
+            if (typeof data === "string") {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    return data;
+                }
             }
-        }.bind(this));
 
-        /* Initial content */
-
-        var message = document.getElementById('message');
-        message.textContent = MashupPlatform.prefs.get('default-value');
-
-        var default_unit = MashupPlatform.prefs.get('default-unit');
-        if (default_unit.trim() != "") {
-            var unit = document.createElement('span');
-            unit.textContent = default_unit;
-            message.appendChild(unit);
+            return data;
         }
-    };
 
-    /* test-code */
-    window.init = init;
-    window.processIncomingData = processIncomingData;
-    window.repaint = repaint;
-    /* end-test-code */
+        processIncomingData(data) {
+            var message, unit, decimals, default_unit, pow, minVal, maxVal, barIndicator, percentage;
 
-    /* TODO
-     * this if is required for testing, but we have to search a cleaner way
-     */
-    if (window.MashupPlatform != null) {
-        init();
-        repaint();
+            minVal = this.MashupPlatform.prefs.get('min-value');
+            maxVal = this.MashupPlatform.prefs.get('max-value');
+            barIndicator = this.shadowDOM.getElementById('bar-indicator');
+
+            data = this.parseInputEndpointData(data);
+            if (data == null || ["number", "string", "boolean"].indexOf(typeof data) !== -1) {
+                data = {
+                    value: data
+                };
+            }
+            decimals = parseInt(this.MashupPlatform.prefs.get('decimals'), 10);
+            if (isNaN(decimals) || decimals < 0) {
+                decimals = 0;
+            }
+
+            message = this.shadowDOM.getElementById('message');
+            if (data.value == null) {
+                message.textContent = this.MashupPlatform.prefs.get('default-value');
+            } else if (typeof data.value === 'number') {
+                if (minVal.trim() != "" && maxVal.trim() != "" && !isNaN(minVal) && !isNaN(maxVal)
+                && parseFloat(minVal) < parseFloat(maxVal)) {
+                    percentage = (data.value - minVal) / (maxVal - minVal);
+                    if (percentage < 0) {
+                        percentage = 0;
+                    } else if (percentage > 1) {
+                        percentage = 1;
+                    }
+
+                    barIndicator.style.left = "calc(" + percentage * 100 + "% - (" + percentage + "*" +
+                        barIndicator.offsetWidth + "px))";
+                }
+
+                pow = Math.pow(10, decimals);
+                data.value = Math.round((pow * data.value).toFixed(decimals)) / pow;
+                message.textContent = data.value;
+            } else {
+                message.textContent = data.value;
+            }
+
+            unit = document.createElement('span');
+            default_unit = this.MashupPlatform.prefs.get('default-unit');
+            if (data.unit != null) {
+                unit.textContent = data.unit;
+                message.appendChild(unit);
+            } else if (!("unit" in data) && default_unit.trim() != "") {
+                unit.textContent = default_unit;
+                message.appendChild(unit);
+            }
+
+            this.repaint();
+        }
+
+        parseColor(color, default_color) {
+            const colorRegex = /^#[0-9a-fA-F]{8}$/i;
+
+            if (colorRegex.test(color)) {
+                return "rgba(" + parseInt(color.substr(1, 2), 16) + "," +
+                            parseInt(color.substr(3, 2), 16) + "," +
+                            parseInt(color.substr(5, 2), 16) + "," +
+                            (parseInt(color.substr(7, 2), 16) / 255) + ")";
+            } else {
+                this.MashupPlatform.widget.log("Invalid color: " + color, this.MashupPlatform.log.WARN);
+                return default_color;
+            }
+        }
+
+        init() {
+            this.MashupPlatform.wiring.registerCallback('textinput', this.processIncomingData.bind(this));
+
+            this.MashupPlatform.widget.context.registerCallback(function (newValues) {
+                if ("heightInPixels" in newValues || "widthInPixels" in newValues) {
+                    this.repaint();
+                }
+            }.bind(this));
+
+            // Sometimes the widget is not correctly resized when the page is loaded
+            // so we force a repaint after a timeout
+            setTimeout(this.repaint.bind(this), 500);
+
+            this.MashupPlatform.prefs.registerCallback(function (_) {
+                this.repaint();
+            }.bind(this));
+
+            /* Initial content */
+
+            var message = this.shadowDOM.getElementById('message');
+            var title = this.shadowDOM.getElementById('title');
+            message.textContent = this.MashupPlatform.prefs.get('default-value');
+            title.textContent = this.MashupPlatform.prefs.get('title');
+
+            var default_unit = this.MashupPlatform.prefs.get('default-unit');
+            if (default_unit.trim() != "") {
+                var unit = document.createElement('span');
+                unit.textContent = default_unit;
+                message.appendChild(unit);
+            }
+        }
     }
+
+    window.CoNWeT_Panel = Widget;
 
 })();
